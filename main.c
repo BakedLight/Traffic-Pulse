@@ -13,6 +13,9 @@
 // ------------------------------------------------------------
 
 #define e 2.718281
+#define TEST_SIZE 10
+
+#define START_DELAY 2
 
 #define SCREEN      900     // window is SCREEN x SCREEN pixels
 #define CENTER      450     // centre of the intersection (x and y)
@@ -97,21 +100,23 @@ typedef struct
 } Controller;
 
 // ------------------------------------------------------------
-// Global data
-// ------------------------------------------------------------
+// Global data--
+// ----------------------------------------------------------
+
+float timeLogs[4][10] = {{0}, {0}, {0}, {0}};
 
 float road_check_time = 1;
 
 int exists = 0;
 int InstantDataSet[4][4] = {{0}, {0}, {0}, {0}};
 
-int DynamicTiming = 0;
+int DynamicTiming = 1;
 
 Path paths[NUM_ROADS][NUM_TURNS];
 Car cars[MAX_CARS];
 int carCount = 0;
 Controller control;
-float density[NUM_ROADS] = { 0.7, 0.7, 0.7, 0.7};     // set by the sliders, 1 = normal traffic
+float density[NUM_ROADS] = { 0.8, 1.2, 0.9, 1.4};     // set by the sliders, 1 = normal traffic
 const char *roadNames[NUM_ROADS] = { "North", "East", "South", "West" };
 Color carColors[6] = { {220,60,60,255}, {60,120,220,255}, {240,200,50,255},
                        {80,200,120,255}, {230,230,235,255}, {160,90,210,255} };
@@ -689,6 +694,8 @@ int main(void)
     int r, i;
     float dt;
 
+    int writtenLogs = 0;
+
     
     InitWindow(SCREEN, SCREEN, "Intersection simulation (left-hand traffic)");
     SetTargetFPS(60);
@@ -697,7 +704,7 @@ int main(void)
     
     BuildPaths();
     
-    bool is_active = false;
+    bool is_active = true;
     Rectangle toggle_bounds = { 10, 215, 120, 30 };
 
     // start with North green, using the first set of green times
@@ -718,6 +725,41 @@ int main(void)
         if (!paused)
         {
             UpdateControl(dt);
+
+            
+            if ((control.cycle <= TEST_SIZE+START_DELAY) && (control.cycle >= START_DELAY)) {
+                timeLogs[control.activeRoad][control.cycle-START_DELAY] += dt;
+            }
+            else if ((!writtenLogs) && (control.cycle > START_DELAY)) {
+                writtenLogs = 1;
+                FILE *fp = fopen("DynamicCaseTimingLog1.csv", "w");
+                if (fp == NULL) {
+                    printf("Error opening file!\n");
+                    return 1;
+                }
+                fprintf(fp, "Cycle, North, East, South, West\n");
+                float currentTTime = 0;
+                for (int i = 0; i < TEST_SIZE; i++){
+                    currentTTime = timeLogs[0][i] + timeLogs[1][i] + timeLogs [2][i] + timeLogs[3][i];
+                    for (int j = 0; j < 4; j++) {
+                        timeLogs[j][i] = currentTTime - timeLogs[j][i];
+                    }
+                }
+                float avg_north = 0, avg_east = 0, avg_south = 0, avg_west = 0;
+                for (int i = 0; i < TEST_SIZE; i++) {
+                    fprintf(fp, "%d, %0.2f, %0.2f, %0.2f, %0.2f\n", i+1, timeLogs[0][i], timeLogs[1][i], timeLogs[2][i], timeLogs[3][i]);
+                    avg_north += timeLogs[0][i];
+                    avg_east += timeLogs[1][i];
+                    avg_south += timeLogs[2][i];
+                    avg_west += timeLogs[3][i];
+                }
+                avg_north /= TEST_SIZE;
+                avg_east /= TEST_SIZE;
+                avg_south /= TEST_SIZE;
+                avg_west /= TEST_SIZE;
+                fprintf(fp, "Average, %f, %f, %f, %f", avg_north, avg_east, avg_south, avg_west);
+                fclose(fp);
+            }
 
             if (GuiToggle(toggle_bounds, "Dynamic Signals", &is_active)) {
                 DynamicTiming = is_active ? 1 : 0;
