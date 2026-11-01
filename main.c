@@ -21,19 +21,19 @@
 #define STOP_GAP    10      // stop line is this far before the intersection box
 #define SPAWN_DIST  480     // cars appear / disappear this far from the centre (off screen)
 
-#define YELLOW_TIME   2.0f  // seconds of yellow light
+#define YELLOW_TIME   3.0f  // seconds of yellow light
 #define ALL_RED_TIME  0.0f  // short all-red pause so the box can clear
-#define MIN_GREEN     3.0f  // limits used by the placeholder function only
-#define MAX_GREEN     15.0f
-#define MIN_NEEDED_EXISTANCE 2
+#define MIN_GREEN     5.0f  // limits used by the placeholder function only
+#define MAX_GREEN     30.0f
+#define MIN_NEEDED_EXISTANCE 5
 #define TOTAL_TIME (YELLOW_TIME + ALL_RED_TIME + MAX_GREEN) * 4
 
-#define ACCEL       80.0f  // car acceleration (pixels/s^2)
-#define BRAKE       200.0f  // car braking (pixels/s^2)
+#define ACCEL       20.0f  // car acceleration (pixels/s^2)
+#define BRAKE       50.0f  // car braking (pixels/s^2)
 #define MIN_GAP     8.0f    // gap kept between stopped cars
-#define TURN_SPEED  75.0f   // max speed while turning
-#define MEDIAN_VEL  75.0f
-#define SPAWN_TIME  7.0f
+#define TURN_SPEED  40.0f   // max speed while turning
+#define MEDIAN_VEL  80.0f
+#define SPAWN_TIME  5.0f
 #define AVG_LENGTH  25.0f
 #define CAR_WIDTH   12.0f
 #define LOOK_AHEAD  160.0f  // how far a car looks for other cars
