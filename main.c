@@ -23,7 +23,7 @@
 
 #define YELLOW_TIME   3.0f  // seconds of yellow light
 #define ALL_RED_TIME  0.0f  // short all-red pause so the box can clear
-#define MIN_GREEN     5.0f  // limits used by the placeholder function only
+#define MIN_GREEN     3.0f  // limits used by the placeholder function only
 #define MAX_GREEN     30.0f
 #define MIN_NEEDED_EXISTANCE 5
 #define TOTAL_TIME (YELLOW_TIME + ALL_RED_TIME + MAX_GREEN) * 4
@@ -105,7 +105,7 @@ float road_check_time = 1;
 int exists = 0;
 int InstantDataSet[4][4] = {{0}, {0}, {0}, {0}};
 
-int DynamicTiming = 1;
+int DynamicTiming = 0;
 
 Path paths[NUM_ROADS][NUM_TURNS];
 Car cars[MAX_CARS];
@@ -689,12 +689,16 @@ int main(void)
     int r, i;
     float dt;
 
+    
     InitWindow(SCREEN, SCREEN, "Intersection simulation (left-hand traffic)");
     SetTargetFPS(60);
     SetRandomSeed((unsigned int)time(NULL));
     GuiSetStyle(DEFAULT, TEXT_SIZE, 14);
-
+    
     BuildPaths();
+    
+    bool is_active = false;
+    Rectangle toggle_bounds = { 10, 215, 120, 30 };
 
     // start with North green, using the first set of green times
     RefreshGreenTimes();
@@ -714,8 +718,11 @@ int main(void)
         if (!paused)
         {
             UpdateControl(dt);
-            
-            if (road_check_time <= 0) {
+
+            if (GuiToggle(toggle_bounds, "Dynamic Signals", &is_active)) {
+                DynamicTiming = is_active ? 1 : 0;
+            }
+            if (road_check_time <= 0 && DynamicTiming) {
                 exists = 0;
                 for (int i = 0; i < MAX_CARS; i++) {
                     if (control.activeRoad == cars[i].road) {
