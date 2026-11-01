@@ -24,7 +24,8 @@
 #define YELLOW_TIME   2.0f  // seconds of yellow light
 #define ALL_RED_TIME  0.0f  // short all-red pause so the box can clear
 #define MIN_GREEN     3.0f  // limits used by the placeholder function only
-#define MAX_GREEN     10.0f
+#define MAX_GREEN     15.0f
+#define CLAMP_GREEN   10.0f
 #define TOTAL_TIME (YELLOW_TIME + ALL_RED_TIME + MAX_GREEN) * 4
 
 #define ACCEL       80.0f  // car acceleration (pixels/s^2)
@@ -341,8 +342,8 @@ void RefreshGreenTimes(void)
 
     //--------------------------
     calculate_times(info.waiting, TOTAL_TIME, YELLOW_TIME, control.greenTime);
-    for (int i = 0; i < NUM_ROADS; i++) {
-        if (control.greenTime[i] > MAX_GREEN) control.greenTime[i] = MAX_GREEN;
+    for (int i = 0; ((i < NUM_ROADS) && DynamicTiming); i++) {
+        if (control.greenTime[i] > CLAMP_GREEN) control.greenTime[i] = CLAMP_GREEN;
     }
 }
 
