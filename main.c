@@ -15,7 +15,7 @@
 #define e 2.718281
 #define TEST_SIZE 10
 
-#define START_DELAY 2
+#define START_DELAY 3
 
 #define SCREEN      900     // window is SCREEN x SCREEN pixels
 #define CENTER      450     // centre of the intersection (x and y)
@@ -110,13 +110,13 @@ float road_check_time = 1;
 int exists = 0;
 int InstantDataSet[4][4] = {{0}, {0}, {0}, {0}};
 
-int DynamicTiming = 1;
+int DynamicTiming = 0;
 
 Path paths[NUM_ROADS][NUM_TURNS];
 Car cars[MAX_CARS];
 int carCount = 0;
 Controller control;
-float density[NUM_ROADS] = { 0.8, 1.2, 0.9, 1.4};     // set by the sliders, 1 = normal traffic
+float density[NUM_ROADS] = {1, 1, 1, 1};     // set by the sliders, 1 = normal traffic
 const char *roadNames[NUM_ROADS] = { "North", "East", "South", "West" };
 Color carColors[6] = { {220,60,60,255}, {60,120,220,255}, {240,200,50,255},
                        {80,200,120,255}, {230,230,235,255}, {160,90,210,255} };
@@ -704,7 +704,7 @@ int main(void)
     
     BuildPaths();
     
-    bool is_active = true;
+    bool is_active = false;
     Rectangle toggle_bounds = { 10, 215, 120, 30 };
 
     // start with North green, using the first set of green times
@@ -732,7 +732,7 @@ int main(void)
             }
             else if ((!writtenLogs) && (control.cycle > START_DELAY)) {
                 writtenLogs = 1;
-                FILE *fp = fopen("DynamicCaseTimingLog1.csv", "w");
+                FILE *fp = fopen("NormalCaseTimingLog2.csv", "w");
                 if (fp == NULL) {
                     printf("Error opening file!\n");
                     return 1;
