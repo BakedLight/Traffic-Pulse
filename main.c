@@ -25,7 +25,7 @@
 #define ALL_RED_TIME  0.0f  // short all-red pause so the box can clear
 #define MIN_GREEN     3.0f  // limits used by the placeholder function only
 #define MAX_GREEN     15.0f
-#define CLAMP_GREEN   10.0f
+#define MIN_NEEDED_EXISTANCE 2
 #define TOTAL_TIME (YELLOW_TIME + ALL_RED_TIME + MAX_GREEN) * 4
 
 #define ACCEL       80.0f  // car acceleration (pixels/s^2)
@@ -99,6 +99,10 @@ typedef struct
 // ------------------------------------------------------------
 // Global data
 // ------------------------------------------------------------
+
+float road_check_time = 1;
+
+int exists = 0;
 int InstantDataSet[4][4] = {{0}, {0}, {0}, {0}};
 
 int DynamicTiming = 1;
@@ -342,9 +346,6 @@ void RefreshGreenTimes(void)
 
     //--------------------------
     calculate_times(info.waiting, TOTAL_TIME, YELLOW_TIME, control.greenTime);
-    for (int i = 0; ((i < NUM_ROADS) && DynamicTiming); i++) {
-        if (control.greenTime[i] > CLAMP_GREEN) control.greenTime[i] = CLAMP_GREEN;
-    }
 }
 
 // Order of stages: GREEN -> YELLOW -> ALL RED -> next road's GREEN ...
@@ -706,12 +707,28 @@ int main(void)
     while (!WindowShouldClose())
     {
         dt = GetFrameTime();
+        road_check_time -= dt;
         if (dt > 0.05f) dt = 0.05f;
         if (IsKeyPressed(KEY_SPACE)) paused = !paused;
 
         if (!paused)
         {
             UpdateControl(dt);
+            
+            if (road_check_time <= 0) {
+                exists = 0;
+                for (int i = 0; i < MAX_CARS; i++) {
+                    if (control.activeRoad == cars[i].road) {
+                        if (cars[i].active && cars[i].s + cars[i].length / 2 < paths[cars[i].road][cars[i].turn].entryS) {
+                            exists++;
+                        }
+                    }
+                }
+                if (exists <= MIN_NEEDED_EXISTANCE && control.timer > MIN_GREEN) {
+                    control.timer = MIN_GREEN;
+                }
+                road_check_time = 1;
+            }
 
             for (r = 0; r < NUM_ROADS; r++)
             {
